@@ -1,4 +1,8 @@
-require "openscap_parser/xml_node"
+# frozen_string_literal: true
+
+require 'openscap_parser_2/xml_node'
+require 'oval/criteria'
+require 'oval/metadata'
 require "oval/reference"
 
 module Oval
@@ -15,33 +19,32 @@ module Oval
       @klass ||= @parsed_xml['class']
     end
 
-    def title
-      xml = @parsed_xml.at_xpath("./metadata/title")
-      @title ||= xml && xml.text
+    def deprecated
+      @deprecated ||= @parsed_xml['deprecated']
     end
 
-    def description
-      xml = @parsed_xml.at_xpath("./metadata/description")
-      @description ||= xml && xml.text
+    def metadata
+      @metadata ||= Metadata.new parsed_xml: @parsed_xml.at_xpath("./metadata")
     end
 
-    def reference_nodes
-      @reference_nodes ||= @parsed_xml.xpath("./metadata/reference")
-    end
-
-    def references
-      @references ||= reference_nodes.map { |node| Reference.new parsed_xml: node }
+    def criteria
+      if @criteria
+        @criteria
+      else
+        Criteria.new parsed_xml: @parsed_xml.at_xpath('./criteria') if @parsed_xml.at_xpath('./criteria')
+      end
     end
 
     def to_h
-      {
+      h = {
         :id => id,
         :version => version,
         :klass => klass,
-        :title => title,
-        :description => description,
-        :references => references.map(&:to_h)
+        :deprecated => deprecated,
+        :metadata => metadata.to_h
       }
+      h[:criteria] = criteria.to_h if criteria.respond_to?(:to_h)
+      h
     end
   end
 end

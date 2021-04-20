@@ -1,4 +1,4 @@
-require 'openscap_parser/xml_node'
+require 'openscap_parser_2/xml_node'
 
 module Oval
   class DefinitionResult < ::OpenscapParser::XmlNode
